@@ -1,0 +1,103 @@
+#!/usr/bin/env python3
+
+# Copyright 2012 Mike Sampson
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+import os
+import sys
+import struct
+import argparse
+
+HEADERS = {
+    'GIF': (b'GIF87a', b'GIF89a'),
+    'PNG': b'\x89PNG\r\n\x1a\n',
+    'JPG': b'\xff\xd8'
+}
+
+EXT = ['gif', 'png', 'jpg', 'jpeg', 'jpe', 'jfif', 'jif']
+
+class ImageError(Exception): pass
+
+def parse_args():
+    parser = argparse.ArgumentParser(description =
+            'search for image files with dimensions above a certain size.')
+    parser.add_argument('directory', metavar='dir', type=str, nargs = '?',
+            default = os.getenv('HOME'), help='directory to search (default: ~)')
+    parser.add_argument('-x', '--width', type = int, default = 800,
+            help = 'minimum image width (default: 800)')
+    parser.add_argument('-y', '--height', type = int, default = 600,
+            help = 'minimum image height (default: 600)')
+    parser.add_argument('-v', '--verbose', action = 'store_true',
+            help = 'print out image dimensions')
+    parser.add_argument('-s', '--skip', action = 'store_true',
+            help = 'skip hidden directories')
+
+    return parser.parse_args()
+
+
+def image_info(filename):
+    f = open(filename, 'rb')
+    b = f.read(4096)
+
+    if b[:6] in HEADERS['GIF']:
+        return struct.unpack('<HH', b[6:10])
+    elif b.startswith(HEADERS['PNG']):
+        return struct.unpack(">LL", b[16:24])
+    elif b.startswith(HEADERS['JPG']):
+        i = b.find(b'\xff\xc0') + 5
+        if i < 0:
+            raise ImageError('jpeg missing start of frame marker')
+        return struct.unpack('>HH', b[i:(i + 4)])
+    else:
+        raise ImageError('unknown image header')
+
+
+def print_filepath(filepath, width = None, height = None, error = None):
+    if error:
+        print('%s - error: %s' % (filepath, error), file = sys.stderr)
+    elif args.verbose:
+        print('%s - %dx%d' % (filepath, width, height))
+    else:
+        print('%s' % filepath)
+
+
+def process_file(dirname, filename):
+    if filename.split('.')[-1].lower() in EXT:
+        f = os.path.join(dirname, filename)
+        try:
+            w, h = image_info(f)
+            if w >= args.width and h >= args.height:
+                print_filepath(f, width = w, height = h)
+        except Exception as e:
+            print_filepath(f, error = e)
+
+
+def main():
+    for dirname, dirnames, filenames in os.walk(args.directory):
+        for subdirname in dirnames[:]:
+            if args.skip and subdirname.startswith('.'):
+                dirnames.remove(subdirname)
+
+        dirnames.sort()
+
+        for filename in filenames:
+            process_file(dirname, filename)
+
+
+args = parse_args()
+try:
+    main()
+except KeyboardInterrupt:
+    print()
