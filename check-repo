@@ -1,0 +1,25 @@
+#!/bin/bash
+
+function print_usage
+{
+    echo "Usage: $0 <DIRECTORY>"
+    echo "Check git repo located in <DIRECTORY> for new remote tags."
+}
+
+if [[ $# != 1 ]]
+then
+    print_usage
+    exit 1
+fi
+
+cd $1
+
+TAG_PRE=$( git for-each-ref --sort='*authordate' --format='%(tag)' refs/tags | tail -n 1)
+
+git fetch --quiet
+
+TAG_POST=$( git for-each-ref --sort='*authordate' --format='%(tag)' refs/tags | tail -n 1)
+
+if [[ "$TAG_PRE" != "$TAG_POST" ]]; then
+    git show "$TAG_POST"
+fi
