@@ -17,29 +17,55 @@
 
 import sys
 import glob
+import os.path
+import argparse
 import mimetypes
 import subprocess
 
+def parse_args():
+    parser = argparse.ArgumentParser(description =
+            'a simple mplayer launcher.')
+    parser.add_argument('filename', metavar='FILE', type=str, nargs = '?',
+            help='file to play, if not provided allow user to select from media files in current directory.')
+    parser.add_argument('-l', '--list', action = 'store_true',
+            help = 'list media files in current directory.')
+    parser.add_argument('-f', '--fullscreen', action = 'store_true',
+            help = 'launch mplayer fullscreen.')
+
+    return parser.parse_args()
+
 def mplayer(filename):
     fd = open('/dev/null')
-    subprocess.Popen(['mplayer', filename], stdin = fd, stdout = fd, stderr = fd)
+    if args.fullscreen:
+        command = ['mplayer', '-fs', filename]
+    else:
+        command = ['mplayer', filename]
+    subprocess.Popen(command, stdin = fd, stdout = fd, stderr = fd)
     fd.close()
 
-def select_media():
+def get_media_files():
     def fn(filename):
         mt = mimetypes.guess_type(filename)[0]
         return mt != None and mt.startswith('video')
 
     files = list(filter(fn, glob.glob('*')))
 
+    files.sort()
+
+    return files
+
+def list_media(allow_selection = False):
+    files = get_media_files()
+
     if not files:
         print('No media files found in current directory.')
         return
 
-    files.sort()
-
-    for i,f in enumerate(files):
+    for i, f in enumerate(files):
         print('[%2d] - %s' % (i, f))
+
+    if not allow_selection:
+        return
 
     selection = input('\nSelect file to play (0 to %d, q to quit): ' % (len(files) - 1))
     if selection == 'q':
@@ -51,7 +77,10 @@ def select_media():
     except:
         print('Invalid selection.')
 
-if len(sys.argv) == 1:
-    select_media()
+args = parse_args()
+if args.filename and os.path.isfile(args.filename):
+    mplayer(args.filename)
+elif args.filename:
+    print('Error: %s not found.' % args.filename)
 else:
-    mplayer(sys.argv[1])
+    list_media(not args.list)
