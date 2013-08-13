@@ -1,0 +1,34 @@
+#!/usr/bin/env python3
+
+
+import re
+import sys
+import os.path
+import subprocess
+
+
+def check_args(regex):
+    for arg in sys.argv[1:]:
+        if re.search(regex, arg):
+            return True
+    return False
+
+
+def main():
+
+    args = sys.argv[1:]
+
+    # append site.yml if no yml file passed
+    if not check_args('\.yml$'):
+        args.append('site.yml')
+
+    # if hosts exists append
+    inv_specified = check_args('^--inventory-file') or check_args('^-i$')
+    if os.path.isfile('hosts') and not inv_specified:
+        args.append('--inventory-file=hosts')
+
+    subprocess.call(['ansible-playbook'] + args)
+
+
+if __name__ == '__main__':
+    main()
