@@ -1,10 +1,44 @@
 #!/usr/bin/env python3
 
+# Copyright 2013 Mike Sampson
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 
 import re
 import sys
 import os.path
 import subprocess
+
+
+USAGE = """\
+ap - a simple ansible-playbook wrapper.
+
+ap simply calls ansible-playbook passing all command line arguments with the
+following exceptions:
+
+If a file called 'site.yml' exists in the current directory and a .yml file was
+not specified, append site.yml to the arguments passed to ansible-playbook
+
+If a file called 'hosts' exists in the current directory and an inventory file
+was not specified using -i or --inventory-file, append --inventory-file=hosts to
+the arguments.
+
+The output of ansible-playbook --help follows.
+
+--------------------------------------------------------------------------------
+"""
 
 
 def check_args(regex):
@@ -17,6 +51,11 @@ def check_args(regex):
 def main():
 
     args = sys.argv[1:]
+
+    if check_args('^--help$'):
+        print(USAGE)
+        subprocess.call(['ansible-playbook'] + args)
+        return
 
     # append site.yml if no yml file passed
     if not check_args('\.yml$'):
