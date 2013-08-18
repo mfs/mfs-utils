@@ -101,11 +101,7 @@ def fields_mx(r):
 def fields_a(r):
     return [r[x] for x in ['host', 'type', 'value']]
 
-def fields_aaaa(r):
-    return [r[x] for x in ['host', 'type', 'value']]
-
-def fields_cname(r):
-    return [r[x] for x in ['host', 'type', 'value']]
+fields_aaaa = fields_cname = fields_a
 
 def format_record(r):
     fmt_str = '%-16s IN  %-6s %s'
