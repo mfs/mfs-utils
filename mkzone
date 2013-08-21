@@ -20,8 +20,10 @@ import yaml
 import jinja2
 import datetime
 import argparse
+import ipaddress
 
 EXIT_CODE = 0
+MASK = 0
 
 EXAMPLE_YAML="""
 origin: example.com.
@@ -104,7 +106,29 @@ def fields_a(r):
 fields_aaaa = fields_cname = fields_a
 
 def fields_ptr(r):
-    return [r[x] for x in ['value', 'type', 'host']]
+    return [reverse_addr_host(r['value'], MASK), r['type'], r['host']]
+
+def reverse_addr_mask(cidr):
+    if ':' in cidr:
+        return 32 - int(cidr.split('/')[1]) // 4
+    else:
+        return 4 - int(cidr.split('/')[1]) // 8
+
+def reverse_addr_origin(addr, mask):
+    if ':' in addr:
+        addr = ipaddress.IPv6Address(addr).exploded.replace(':', '')[::-1]
+        return '.'.join(addr[mask:]) + '.ip6.arpa.'
+    else:
+        addr = addr.split('.')[::-1]
+        return '.'.join(addr[mask:]) + '.in-addr.arpa.'
+
+def reverse_addr_host(addr, mask):
+    if ':' in addr:
+        addr = ipaddress.IPv6Address(addr).exploded.replace(':', '')[::-1]
+        return '.'.join(addr[:mask])
+    else:
+        addr = addr.split('.')[::-1]
+        return '.'.join(addr[:mask])
 
 def format_record(r):
     fmt_str = '%-16s IN  %-6s %s'
@@ -126,6 +150,11 @@ def main():
         f = open(args.filename)
         z = yaml.safe_load(f)
     z['soa']['serial'] = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+
+    if 'type' in z and z['type'] == 'reverse':
+        global MASK
+        MASK = reverse_addr_mask(z['origin'])
+        z['origin'] = reverse_addr_origin(z['origin'].split('/')[0], MASK)
 
     print(template.render(origin = z['origin'], ttl = z['ttl'], soa = z['soa'], records = map(format_record, z['records'])))
 
