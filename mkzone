@@ -25,7 +25,7 @@ import ipaddress
 EXIT_CODE = 0
 MASK = 0
 
-EXAMPLE_YAML="""
+EXAMPLE_YAML = """
 origin: example.com.
 ttl: 1h
 
@@ -67,7 +67,7 @@ showing the required syntax and all supported options and record types is below:
 -------------------------------------->8----------------------------------------
 """.format(EXAMPLE_YAML)
 
-TEMPLATE="""\
+TEMPLATE = """\
 $ORIGIN {{ zone.origin }}
 $TTL {{ zone.ttl }}
 @             IN  SOA  {{ zone.soa.ns }} {{ zone.soa.user }} (
@@ -89,8 +89,10 @@ def parse_args():
             epilog = HELP_TEXT,
             formatter_class = argparse.RawTextHelpFormatter)
     group = parser.add_mutually_exclusive_group(required = True)
-    group.add_argument('filename', nargs = '?', help = 'yaml file containing zone info')
-    group.add_argument('--example', action = 'store_true', help = 'output zone file from example yaml file')
+    group.add_argument('filename', nargs = '?',
+                       help = 'yaml file containing zone info')
+    group.add_argument('--example', action = 'store_true',
+                       help = 'output zone file from example yaml file')
 
     return parser.parse_args()
 
