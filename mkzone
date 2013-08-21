@@ -68,17 +68,17 @@ showing the required syntax and all supported options and record types is below:
 """.format(EXAMPLE_YAML)
 
 TEMPLATE="""\
-$ORIGIN {{ origin }}
-$TTL {{ ttl }}
-@             IN  SOA  {{ soa.ns }} {{ soa.user }} (
-              {{ soa.serial }} ; serial number of this zone file
+$ORIGIN {{ zone.origin }}
+$TTL {{ zone.ttl }}
+@             IN  SOA  {{ zone.soa.ns }} {{ zone.soa.user }} (
+              {{ zone.soa.serial }} ; serial number of this zone file
               1d             ; slave refresh (1 day)
               2h             ; slave retry time in case of a problem (2 hours)
               4w             ; slave expiration time (4 weeks)
               1h             ; maximum caching time in case of failed lookups (1 hour)
               )
 
-{% for record in records -%}
+{% for record in zone.records -%}
 {{ record }}
 {% endfor %}
 """
@@ -145,18 +145,20 @@ def main():
     template = jinja2.Template(TEMPLATE)
 
     if args.example:
-        z = yaml.safe_load(EXAMPLE_YAML)
+        zone = yaml.safe_load(EXAMPLE_YAML)
     else:
         f = open(args.filename)
-        z = yaml.safe_load(f)
-    z['soa']['serial'] = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+        zone = yaml.safe_load(f)
+    zone['soa']['serial'] = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 
-    if 'type' in z and z['type'] == 'reverse':
+    if 'type' in zone and zone['type'] == 'reverse':
         global MASK
-        MASK = reverse_addr_mask(z['origin'])
-        z['origin'] = reverse_addr_origin(z['origin'].split('/')[0], MASK)
+        MASK = reverse_addr_mask(zone['origin'])
+        zone['origin'] = reverse_addr_origin(zone['origin'].split('/')[0], MASK)
 
-    print(template.render(origin = z['origin'], ttl = z['ttl'], soa = z['soa'], records = map(format_record, z['records'])))
+    zone['records'] = map(format_record, zone['records'])
+
+    print(template.render(zone = zone))
 
     sys.exit(EXIT_CODE)
 
