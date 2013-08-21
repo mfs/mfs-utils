@@ -24,7 +24,7 @@ import argparse
 EXIT_CODE = 0
 
 EXAMPLE_YAML="""
-domain: example.com.
+origin: example.com.
 ttl: 1h
 
 soa:
@@ -66,9 +66,9 @@ showing the required syntax and all supported options and record types is below:
 """.format(EXAMPLE_YAML)
 
 TEMPLATE="""\
-$ORIGIN {{ domain }}
+$ORIGIN {{ origin }}
 $TTL {{ ttl }}
-{{ domain }}  IN  SOA  {{ soa.ns }} {{ soa.user }} (
+@             IN  SOA  {{ soa.ns }} {{ soa.user }} (
               {{ soa.serial }} ; serial number of this zone file
               1d             ; slave refresh (1 day)
               2h             ; slave retry time in case of a problem (2 hours)
@@ -127,7 +127,7 @@ def main():
         z = yaml.safe_load(f)
     z['soa']['serial'] = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 
-    print(template.render(domain = z['domain'], ttl = z['ttl'], soa = z['soa'], records = map(format_record, z['records'])))
+    print(template.render(origin = z['origin'], ttl = z['ttl'], soa = z['soa'], records = map(format_record, z['records'])))
 
     sys.exit(EXIT_CODE)
 
