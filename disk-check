@@ -1,0 +1,38 @@
+#!/usr/bin/env python3
+
+""" A simple disk usage notifier. Requires a notification daemon such as dunst.
+    If calling from cron use something like:
+    > */5 * * * * env DISPLAY=:0 /usr/local/bin/disk-check
+"""
+
+import os
+import notify2
+
+def notify(msg, urgency):
+    n = notify2.Notification(msg)
+    n.set_urgency(urgency)
+    n.show()
+
+
+def check_usage(fs):
+        stat = os.statvfs(fs)
+        usage = 1.0 - stat.f_bavail / stat.f_blocks
+        if usage > 0.95:
+            notify('{0} - {1:.0%} used.'.format(fs, usage), notify2.URGENCY_CRITICAL)
+        elif usage > 0.9:
+            notify('{0} - {1:.0%} used.'.format(fs, usage), notify2.URGENCY_NORMAL)
+
+
+def main():
+    notify2.init('Disk Usage')
+    mounts = [ x.split() for x in open('/etc/mtab').readlines() ]
+
+    filesystems = [x[1] for x in mounts if '/' in x[0]]
+
+    for fs in filesystems:
+        check_usage(fs)
+
+
+if __name__ == '__main__':
+    main()
+
