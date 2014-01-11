@@ -15,12 +15,12 @@ def notify(msg, urgency):
 
 
 def check_usage(fs):
-        stat = os.statvfs(fs)
-        usage = 1.0 - stat.f_bavail / stat.f_blocks
-        if usage > 0.95:
-            notify('{0} - {1:.0%} used.'.format(fs, usage), notify2.URGENCY_CRITICAL)
-        elif usage > 0.9:
-            notify('{0} - {1:.0%} used.'.format(fs, usage), notify2.URGENCY_NORMAL)
+    stat = os.statvfs(fs)
+    usage = 1.0 - stat.f_bavail / stat.f_blocks
+    if usage > 0.95:
+        notify('{0} - {1:.0%} used.'.format(fs, usage), notify2.URGENCY_CRITICAL)
+    elif usage > 0.9:
+        notify('{0} - {1:.0%} used.'.format(fs, usage), notify2.URGENCY_NORMAL)
 
 
 def main():
