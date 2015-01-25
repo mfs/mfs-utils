@@ -1,0 +1,62 @@
+#!/usr/bin/env python3
+
+# Copyright 2015 Mike Sampson
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+'''aes-ctr-rng - A thin wrapper around openssl that generates random data.
+              Encrypts /dev/zero in aes-256-ctr mode. The key is 32 bytes read
+              from /dev/urandom. Passes key via a file descriptor which doesn't
+              leak the key as passing via the command line or an env variable
+              would. Suitable for filling a device with random data prior to
+              encryption. Checks stdout is not a terminal and displays this text
+              if it is.
+Examples:
+    aes-ctr-rng | xxd | less                          # view output as hex.
+    aes-ctr-rng | dd bs=1M of=/dev/sdf                # fill /dev/sdf with random data.
+    aes-ctr-rng | pv -p -s 80G | dd bs=1M of=/dev/sdf # as above with progress bar.'''
+
+import os
+import sys
+import subprocess
+
+
+def help():
+    print(__doc__)
+    sys.exit()
+
+
+def main():
+    if sys.stdout.isatty() or len(sys.argv) > 1:
+        help()
+
+    dev_zero = os.open('/dev/zero', os.O_RDONLY)
+
+    r, w = os.pipe()
+
+    cmd = 'openssl enc -aes-256-ctr -pass fd:{} -nosalt'.format(r)
+
+    p = subprocess.Popen(cmd.split(), stdin = dev_zero, pass_fds = [r])
+
+    os.close(r)
+    os.write(w, os.urandom(32))
+    os.close(w)
+
+    p.wait()
+
+    os.close(dev_zero)
+
+
+if __name__ == '__main__':
+    main()
