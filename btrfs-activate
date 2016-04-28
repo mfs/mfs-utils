@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# Based on:
+# http://marc.merlins.org/perso/btrfs/post_2014-04-27_Btrfs-Multi-Device-Dmcrypt.html
+
+### NOT TESTED
+
+die () {
+    echo "$1"
+    exit 1
+}
+
+DRIVES ="
+b10cd8cc-b721-483a-94f3-3d0bb036b991
+7551ce14-0291-485f-b74b-d4c94d3e0a64
+"
+
+read -s -p "LUKS key: " luks_key
+
+for d in $DRIVES
+do
+    dev=$(basename $(readlink /dev/disk/by-uuid/$d))
+    echo "$luks_key" | cryptsetup luksOpen "$dev" "crypt_$dev" || die "$dev decryption failed"
+    echo "$dev decrypted"
+done
+
+btrfs device scan
+mkdir -p /tank
+mount mount -o defaults,noatime /dev/disk/by-label/tank /tank
