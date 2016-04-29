@@ -16,6 +16,7 @@ b10cd8cc-b721-483a-94f3-3d0bb036b991
 "
 
 read -s -p "LUKS key: " luks_key
+echo
 
 for d in $DRIVES
 do
