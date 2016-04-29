@@ -26,4 +26,4 @@ done
 
 btrfs device scan
 mkdir -p /tank
-mount mount -o defaults,noatime /dev/disk/by-label/tank /tank
+mount -o defaults,noatime /dev/disk/by-label/tank /tank
