@@ -10,7 +10,7 @@ die () {
     exit 1
 }
 
-DRIVES ="
+DRIVES="
 b10cd8cc-b721-483a-94f3-3d0bb036b991
 7551ce14-0291-485f-b74b-d4c94d3e0a64
 "
