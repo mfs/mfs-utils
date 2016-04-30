@@ -8,14 +8,33 @@ die () {
     exit 1
 }
 
-LABEL=tank
+print_help() {
+    echo "usage: btrfs-crypt <BTRFS_LABEL>"
+    echo
+    echo "loads config from /etc/btrfs-crypt/<BTRFS_LABEL>.conf"
+    echo "this file defines two variables. e.g."
+    echo
+    echo "    MOUNTPOINT=/tank"
+    echo
+    echo "    DRIVES=\""
+    echo "    b10cd8cc-b721-483a-94f3-3d006036b991"
+    echo "    7551ce14-0291-485f-b74b-d4007d3e0a64"
+    echo "    \""
+}
 
-MOUNTPOINT=/tank
+if [[ $# -ne 1 ]]; then
+    print_help
+    exit 1
+fi
 
-DRIVES="
-b10cd8cc-b721-483a-94f3-3d0bb036b991
-7551ce14-0291-485f-b74b-d4c94d3e0a64
-"
+LABEL=$1
+
+if [[ ! -f "/etc/btrfs-crypt/$LABEL.conf" ]]; then
+    echo "error: $LABEL not defined."
+    exit 1
+fi
+
+. /etc/btrfs-crypt/$LABEL.conf
 
 read -s -p "LUKS key: " luks_key
 echo
