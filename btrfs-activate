@@ -8,6 +8,10 @@ die () {
     exit 1
 }
 
+LABEL=tank
+
+MOUNTPOINT=/tank
+
 DRIVES="
 b10cd8cc-b721-483a-94f3-3d0bb036b991
 7551ce14-0291-485f-b74b-d4c94d3e0a64
@@ -24,6 +28,6 @@ do
 done
 
 btrfs device scan
-mkdir -p /tank
-mount -o defaults,noatime /dev/disk/by-label/tank /tank || die "Couldn't find btrfs tank"
-echo "btrfs /tank mounted"
+mkdir -p $MOUNTPOINT
+mount -o defaults,noatime /dev/disk/by-label/$LABEL $MOUNTPOINT || die "Couldn't find btrfs $LABEL"
+echo "btrfs $MOUNTPOINT mounted"
