@@ -1,19 +1,48 @@
 #!/usr/bin/env python3
 
 import sys
+import glob
+import os.path
 import paramiko
 
 host = sys.argv[1]
-mountpoint = sys.argv[2]
-path = sys.argv[3]
+remote_path = sys.argv[2]
+local_path = sys.argv[3]
 
 ssh = paramiko.SSHClient()
 ssh.load_system_host_keys()
 ssh.connect(host, username='root')
 
+# list remote snapshots, this could be better
+# e.g. test if they are snapshots
+# http://stackoverflow.com/questions/25908149/how-to-test-if-location-is-a-btrfs-subvolume
+def list_remote_snapshots(client):
+    snapshots = set()
+    stdin, stdout, stderr = client.exec_command('ls {}'.format(remote_path))
 
-stdin, stdout, stderr = ssh.exec_command('btrfs subvolume list {}'.format(mountpoint))
+    for line in stdout.readlines():
+        snapshots.add(line.strip())
 
-for line in stdout.readlines():
-    subvolume = line.split()
-    print(subvolume[8])
+    return snapshots
+
+# list local snapshots, this could be better
+# e.g. test if they are snapshots
+def list_local_snapshots(client):
+    snapshots = set()
+    for f in glob.glob(os.path.join(local_path, '*')):
+        snapshots.add(os.path.basename(f))
+
+    return snapshots
+
+print(list_remote_snapshots(ssh))
+
+print(list_local_snapshots(ssh))
+
+# Plan:
+
+# Use these sets to calc snapshots available on both hosts, the most recent is
+# the parent.
+
+# The most recent local snapshot is the one to send.
+
+# make up commandline and run
