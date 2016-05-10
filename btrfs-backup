@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 
+# TODO
+# Need to create local snapshot in this script
+# Clean up and document command line arguments
+# Actually spawn send/receive
+
 import sys
 import glob
 import os.path
@@ -27,22 +32,35 @@ def list_remote_snapshots(client):
 
 # list local snapshots, this could be better
 # e.g. test if they are snapshots
-def list_local_snapshots(client):
+def list_local_snapshots():
     snapshots = set()
     for f in glob.glob(os.path.join(local_path, '*')):
         snapshots.add(os.path.basename(f))
 
     return snapshots
 
-print(list_remote_snapshots(ssh))
 
-print(list_local_snapshots(ssh))
+def main():
+    remote_snapshots = list_remote_snapshots(ssh)
 
-# Plan:
+    local_snapshots = list_local_snapshots()
 
-# Use these sets to calc snapshots available on both hosts, the most recent is
-# the parent.
+    common_snapshots = local_snapshots.intersection(remote_snapshots)
 
-# The most recent local snapshot is the one to send.
+    if not common_snapshots:
+        print("No common snapshots. Perform full backup.")
+        return
 
-# make up commandline and run
+    # we should compare these to make sure current is newer than parent
+    # though we will be creating current in this script eventually.
+    parent = sorted(common_snapshots)[-1]
+
+    current = sorted(local_snapshots)[-1]
+
+    # print the command to run for now. Need to spawn this off.
+    print("btrfs send -p {} \\".format(os.path.join(local_path, parent)))
+    print("{} | pv | \\".format(os.path.join(local_path, current)))
+    print("ssh {} btrfs receive {}".format(host, remote_path))
+
+if __name__ == "__main__":
+    main()
