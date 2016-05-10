@@ -4,6 +4,7 @@
 # Need to create local snapshot in this script
 # Clean up and document command line arguments
 # Actually spawn send/receive
+# Expire old backups.
 
 import sys
 import glob
