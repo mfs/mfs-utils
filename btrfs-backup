@@ -41,6 +41,11 @@ def list_local_snapshots():
 
     return snapshots
 
+# this needs to return an isodate. I'm currently using 'date --iso-8601=seconds'
+# which includes the timezone. Probably should just use UTC or localtime. Not sure.
+def isodate():
+    pass
+
 def snapshot(src, dst):
     p = subprocess.run(["btrfs", "subvolume", "snapshot", "-r", src, dst])
 
