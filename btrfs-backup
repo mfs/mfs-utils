@@ -10,6 +10,7 @@ import sys
 import glob
 import os.path
 import paramiko
+import subprocess
 
 host = sys.argv[1]
 remote_path = sys.argv[2]
@@ -40,6 +41,12 @@ def list_local_snapshots():
 
     return snapshots
 
+def snapshot(src, dst):
+    p = subprocess.run(["btrfs", "subvolume", "snapshot", "-r", src, dst])
+
+    if p.returncode != 0:
+        print("Error creating snapshot: {}".format(p.returncode))
+        sys.exit(p.returncode)
 
 def main():
     remote_snapshots = list_remote_snapshots(ssh)
