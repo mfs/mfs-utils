@@ -13,19 +13,21 @@ import paramiko
 import subprocess
 import datetime
 import socket
+import argparse
 
-host = sys.argv[1]
-remote_path = sys.argv[2]
-local_path = sys.argv[3]
 
-ssh = paramiko.SSHClient()
-ssh.load_system_host_keys()
-ssh.connect(host, username='root')
+def parse_cmdline():
+    parser = argparse.ArgumentParser(description = "btrfs snapshot helper")
+    parser.add_argument("source", help = "source subvolume")
+    parser.add_argument("snapshots", help = "where to store snapshot locally")
+    parser.add_argument("remote", help = "remote server and path")
+
+    return parser.parse_args()
 
 # list remote snapshots, this could be better
 # e.g. test if they are snapshots
 # http://stackoverflow.com/questions/25908149/how-to-test-if-location-is-a-btrfs-subvolume
-def list_remote_snapshots(client):
+def list_remote_snapshots(client, remote_path):
     snapshots = set()
     stdin, stdout, stderr = client.exec_command('ls {}'.format(remote_path))
 
@@ -36,7 +38,7 @@ def list_remote_snapshots(client):
 
 # list local snapshots, this could be better
 # e.g. test if they are snapshots
-def list_local_snapshots():
+def list_local_snapshots(local_path):
     snapshots = set()
     for f in glob.glob(os.path.join(local_path, '*')):
         snapshots.add(os.path.basename(f))
@@ -53,24 +55,28 @@ def snapshot(src, dst):
         print("Error creating snapshot: {}".format(p.returncode))
         sys.exit(p.returncode)
 
-def snapshot_home():
-    home = os.path.expanduser("~")
-    snapshots = os.path.expanduser("~/.snapshots")
+def main():
+
+    args = parse_cmdline()
+
+    host, dest = args.remote.split(":")
+
+    ssh = paramiko.SSHClient()
+    ssh.load_system_host_keys()
+    ssh.connect(host, username='root')
+
+    # this probably needs to be adjustable?
     snapshot_name = "{}-{}-{}".format(
         socket.gethostname(),
         os.environ.get("USER"),
         isodate()
     )
 
-    snapshot(home, os.path.join(snapshots, snapshot_name))
+    snapshot(args.source, os.path.join(args.snapshots, snapshot_name))
 
-def main():
+    remote_snapshots = list_remote_snapshots(ssh, dest)
 
-    snapshot_home()
-
-    remote_snapshots = list_remote_snapshots(ssh)
-
-    local_snapshots = list_local_snapshots()
+    local_snapshots = list_local_snapshots(args.snapshots)
 
     common_snapshots = local_snapshots.intersection(remote_snapshots)
 
@@ -85,9 +91,9 @@ def main():
     current = sorted(local_snapshots)[-1]
 
     # print the command to run for now. Need to spawn this off.
-    print("btrfs send -p {} \\".format(os.path.join(local_path, parent)))
-    print("{} | pv | \\".format(os.path.join(local_path, current)))
-    print("ssh {} btrfs receive {}".format(host, remote_path))
+    print("btrfs send -p {} \\".format(os.path.join(args.snapshots, parent)))
+    print("{} | pv | \\".format(os.path.join(args.snapshots, current)))
+    print("ssh {} btrfs receive {}".format(host, dest))
 
 if __name__ == "__main__":
     main()
