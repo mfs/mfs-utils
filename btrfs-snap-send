@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
 # TODO
-# Clean up and document command line arguments
-# or use a config file?
 # Actually spawn send/receive
 # Expire old backups.
 
@@ -49,7 +47,9 @@ def isodate():
     return datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
 
 def snapshot(src, dst):
-    p = subprocess.run(["btrfs", "subvolume", "snapshot", "-r", src, dst])
+    cmd = ["btrfs", "subvolume", "snapshot", "-r", src, dst]
+    print(":: " + " ".join(cmd))
+    p = subprocess.run(cmd)
 
     if p.returncode != 0:
         print("Error creating snapshot: {}".format(p.returncode))
