@@ -47,9 +47,8 @@ def isodate():
     return datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
 
 def snapshot(src, dst):
-    cmd = ["btrfs", "subvolume", "snapshot", "-r", src, dst]
-    print(":: " + " ".join(cmd))
-    p = subprocess.run(cmd)
+    print(":: creating snapshot {}".format(dst))
+    p = subprocess.run(["btrfs", "subvolume", "snapshot", "-r", src, dst])
 
     if p.returncode != 0:
         print("Error creating snapshot: {}".format(p.returncode))
