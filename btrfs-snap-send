@@ -89,10 +89,13 @@ def main():
 
     current = sorted(local_snapshots)[-1]
 
-    # print the command to run for now. Need to spawn this off.
-    print("btrfs send -p {} \\".format(os.path.join(args.snapshots, parent)))
-    print("{} | pv | \\".format(os.path.join(args.snapshots, current)))
-    print("ssh {} btrfs receive {}".format(host, dest))
+    print("Sending snapshot...")
+
+    cmd = "btrfs send -p {} ".format(os.path.join(args.snapshots, parent)) +
+    "{} | pv | ".format(os.path.join(args.snapshots, current)) +
+    "ssh {} btrfs receive {}".format(host, dest)
+
+    subprocess.run(cmd, shell = True)
 
 if __name__ == "__main__":
     main()
