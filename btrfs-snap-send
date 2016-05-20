@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 # TODO
-# Actually spawn send/receive
 # Expire old backups. Both local and remote.
 
 import sys
