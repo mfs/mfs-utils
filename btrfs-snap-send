@@ -78,15 +78,19 @@ def main():
 
     common_snapshots = local_snapshots.intersection(remote_snapshots)
 
+    current = sorted(local_snapshots)[-1]
+
     if not common_snapshots:
         print("No common snapshots. Perform full backup.")
+        cmd = "btrfs send {} | pv | ".format(os.path.join(args.snapshots, current)) + \
+        "ssh {} btrfs receive {}".format(host, dest)
+
+        subprocess.run(cmd, shell = True)
         return
 
     # we should compare these to make sure current is newer than parent
     # though we will be creating current in this script eventually.
     parent = sorted(common_snapshots)[-1]
-
-    current = sorted(local_snapshots)[-1]
 
     print("Sending snapshot...")
 
