@@ -42,6 +42,12 @@ def list_local_snapshots(local_path):
 
     return snapshots
 
+def prune_local_snapshots(path, snapshots, n):
+    x = len(snapshots) - n
+    if x > 0:
+        for s in sorted(snapshots)[:x]:
+            delete_snapshot(path)
+
 def isodate():
     return datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
 
@@ -51,6 +57,13 @@ def snapshot(src, dst):
 
     if p.returncode != 0:
         print("Error creating snapshot: {}".format(p.returncode))
+        sys.exit(p.returncode)
+
+def delete_snapshot(path):
+    p = subprocess.run(["btrfs", "subvolume", "deletet", path])
+
+    if p.returncode != 0:
+        print("Error deleting snapshot: {}".format(p.returncode))
         sys.exit(p.returncode)
 
 def main():
