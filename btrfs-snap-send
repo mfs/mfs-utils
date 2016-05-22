@@ -18,6 +18,7 @@ def parse_cmdline():
     parser.add_argument("source", help = "source subvolume")
     parser.add_argument("snapshots", help = "where to store snapshot locally")
     parser.add_argument("remote", help = "remote server and path")
+    parser.add_argument("--max", type=int, default=7, help="max snapshots")
 
     return parser.parse_args()
 
@@ -44,9 +45,11 @@ def list_local_snapshots(local_path):
 
 def prune_local_snapshots(path, snapshots, n):
     x = len(snapshots) - n
+    overs = sorted(snapshots)[-x:]
     if x > 0:
-        for s in sorted(snapshots)[:x]:
-            delete_snapshot(path)
+        for s in overs:
+            print(":: deleting snapshot -> {}".format(os.path.join(path, s)))
+            #delete(os.path.join(path, s))
 
 def isodate():
     return datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
@@ -112,6 +115,8 @@ def main():
     "ssh {} btrfs receive {}".format(host, dest)
 
     subprocess.run(cmd, shell = True)
+
+    prune_local_snapshots(args.snapshots, local_snapshots, args.max)
 
 if __name__ == "__main__":
     main()
