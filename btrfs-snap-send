@@ -45,11 +45,11 @@ def list_local_snapshots(local_path):
 
 def prune_local_snapshots(path, snapshots, n):
     x = len(snapshots) - n
-    overs = sorted(snapshots)[-x:]
+    overs = sorted(snapshots)[:x]
     if x > 0:
         for s in overs:
             print(":: deleting snapshot -> {}".format(os.path.join(path, s)))
-            #delete(os.path.join(path, s))
+            #delete_snapshot(os.path.join(path, s))
 
 def isodate():
     return datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
