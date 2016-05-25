@@ -12,13 +12,7 @@ except:
 
 def ptr(addr):
     "convert an IPv4 or IPv6 address into PTR format."
-
-    if ':' in addr:
-        # IPv6
-        return ipaddress.IPv6Address(addr).reverse_pointer
-    else:
-        # IPv4
-        return ipaddress.IPv4Address(addr).reverse_pointer
+    return ipaddress.ip_address(addr).reverse_pointer
 
 def main():
     if len(sys.argv) == 2:
