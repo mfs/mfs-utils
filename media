@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import re
 import sys
 import glob
 import os.path
@@ -43,20 +44,25 @@ def mplayer(filename):
     subprocess.run(command, stdin = fd, stdout = fd, stderr = fd)
     fd.close()
 
-def get_media_files():
+def list_files(pattern):
+    if pattern:
+        rule = re.compile(pattern, re.IGNORECASE)
+        return [x for x in os.listdir() if rule.search(x)]
+    else:
+        return os.listdir()
+
+def list_media_files(pattern = None):
     def fn(filename):
         mt = mimetypes.guess_type(filename)[0]
         return mt != None and mt.startswith('video')
 
-    files = list(filter(fn, glob.glob('*')))
+    files = list(filter(fn, list_files(pattern)))
 
     files.sort()
 
     return files
 
-def list_media(allow_selection = False):
-    files = get_media_files()
-
+def list_media(files, allow_selection = False):
     if not files:
         print('No media files found in current directory.')
         return
@@ -81,6 +87,7 @@ args = parse_args()
 if args.filename and os.path.isfile(args.filename):
     mplayer(args.filename)
 elif args.filename:
-    print('Error: %s not found.' % args.filename)
+    list_media(list_media_files(args.filename))
+    #print('Error: %s not found.' % args.filename)
 else:
-    list_media(not args.list)
+    list_media(list_media_files(), not args.list)
