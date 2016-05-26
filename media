@@ -40,7 +40,7 @@ def mplayer(filename):
         command = ['mplayer', '-fs', filename]
     else:
         command = ['mplayer', filename]
-    subprocess.Popen(command, stdin = fd, stdout = fd, stderr = fd)
+    subprocess.run(command, stdin = fd, stdout = fd, stderr = fd)
     fd.close()
 
 def get_media_files():
