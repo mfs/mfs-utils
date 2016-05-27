@@ -88,6 +88,5 @@ if args.filename and os.path.isfile(args.filename):
     mplayer(args.filename)
 elif args.filename:
     list_media(list_media_files(args.filename))
-    #print('Error: %s not found.' % args.filename)
 else:
     list_media(list_media_files(), not args.list)
