@@ -44,6 +44,7 @@ def mplayer(filename):
     subprocess.run(command, stdin = fd, stdout = fd, stderr = fd)
     fd.close()
 
+# need to make this recurse directories os.walk()
 def list_files(pattern):
     if pattern:
         rule = re.compile(pattern, re.IGNORECASE)
