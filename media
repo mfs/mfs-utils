@@ -44,13 +44,17 @@ def mplayer(filename):
     subprocess.run(command, stdin = fd, stdout = fd, stderr = fd)
     fd.close()
 
-# need to make this recurse directories os.walk()
 def list_files(pattern):
-    if pattern:
-        rule = re.compile(pattern, re.IGNORECASE)
-        return [x for x in os.listdir() if rule.search(x)]
-    else:
-        return os.listdir()
+    all_files = []
+
+    for path, dirs, files in os.walk(os.getcwd()):
+        if pattern:
+            rule = re.compile(pattern, re.IGNORECASE)
+            all_files.extend([os.path.join(path, x) for x in files if rule.search(x)])
+        else:
+            all_files.extend([os.path.join(path, x) for x in files])
+
+    return all_files
 
 def list_media_files(pattern = None):
     def fn(filename):
@@ -69,7 +73,7 @@ def list_media(files, allow_selection = False):
         return
 
     for i, f in enumerate(files):
-        print('[%2d] - %s' % (i, f))
+        print('[%2d] - %s' % (i, os.path.basename(f)))
 
     if not allow_selection:
         return
@@ -88,6 +92,6 @@ args = parse_args()
 if args.filename and os.path.isfile(args.filename):
     mplayer(args.filename)
 elif args.filename:
-    list_media(list_media_files(args.filename))
+    list_media(list_media_files(args.filename), not args.list)
 else:
     list_media(list_media_files(), not args.list)
