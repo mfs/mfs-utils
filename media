@@ -41,7 +41,7 @@ def mplayer(filename):
         command = ['mplayer', '-fs', filename]
     else:
         command = ['mplayer', filename]
-    subprocess.run(command, stdin = fd, stdout = fd, stderr = fd)
+    subprocess.Popen(command, stdin = fd, stdout = fd, stderr = fd)
     fd.close()
 
 def list_files(pattern):
