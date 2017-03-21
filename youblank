@@ -1,0 +1,43 @@
+#!/usr/bin/python3
+
+import sys
+import time
+import subprocess
+
+def youtube_active():
+    cp = subprocess.run(['/usr/bin/wmctrl', '-l'], stdout = subprocess.PIPE)
+    if cp.returncode != 0:
+        return False
+
+    lines = cp.stdout.splitlines()
+    for line in lines:
+        if b'Firefox' in line and b'YouTube' in line:
+            return True
+    return False
+
+def enable_blanking():
+    subprocess.run(['/usr/bin/xset', 's', 'on'])
+    subprocess.run(['/usr/bin/xset', '+dpms'])
+
+def disable_blanking():
+    subprocess.run(['/usr/bin/xset', 's', 'off'])
+    subprocess.run(['/usr/bin/xset', '-dpms'])
+
+def main():
+    blanking_enabled = True
+
+    while True:
+        ya = youtube_active()
+        if ya and blanking_enabled:
+            print("YouTube active. Disabling blanking.", flush = True)
+            disable_blanking()
+            blanking_enabled = False
+        elif not ya and not blanking_enabled:
+            print("YouTube not active. Enabling blanking.", flush = True)
+            enable_blanking()
+            blanking_enabled = True
+
+        time.sleep(60)
+
+if __name__ == '__main__':
+    main()
