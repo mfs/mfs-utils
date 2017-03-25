@@ -13,6 +13,8 @@ def youtube_active():
     for line in lines:
         if b'Firefox' in line and b'YouTube' in line:
             return True
+        if b'Firefox' in line and b'Twitch' in line:
+            return True
     return False
 
 def enable_blanking():
