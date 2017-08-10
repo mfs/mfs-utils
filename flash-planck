@@ -1,0 +1,11 @@
+#!/usr/bin/bash
+
+sleep 10
+dfu-programmer atmega32u4 erase --force
+
+sleep 3
+dfu-programmer atmega32u4 flash planck_rev4_mfs.hex
+
+sleep 3
+dfu-programmer atmega32u4 reset
+
