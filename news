@@ -1,0 +1,27 @@
+#!/usr/bin/env python3
+
+import feedparser
+import html2text
+
+ITEMS = 3
+WIDTH = 110
+
+class tcol:
+    BLUE = '\033[34m'
+    RESET = '\033[0m'
+
+feed = feedparser.parse('https://www.archlinux.org/feeds/news/')
+
+h = html2text.HTML2Text()
+h.ignore_links = True
+h.body_width = WIDTH
+
+for item in feed['items'][:ITEMS]:
+
+    t = item['title']
+    d = item['published'][:16]
+    pad = (WIDTH - (len(t) + len(d))) * ' '
+
+    print(tcol.BLUE + t + pad  + d)
+    print('-' * WIDTH)
+    print(tcol.RESET + h.handle(item['summary']).strip() + '\n\n')
