@@ -38,9 +38,9 @@ def parse_args():
 def mplayer(filename):
     fd = open('/dev/null')
     if args.fullscreen:
-        command = ['mplayer', '-fs', filename]
+        command = ['mpv', '-fs', filename]
     else:
-        command = ['mplayer', filename]
+        command = ['mpv', filename]
     subprocess.Popen(command, stdin = fd, stdout = fd, stderr = fd)
     fd.close()
 
