@@ -7,7 +7,7 @@ ITEMS = 3
 WIDTH = 110
 
 class tcol:
-    BLUE = '\033[34m'
+    BLUE = '\033[36m'
     RESET = '\033[0m'
 
 feed = feedparser.parse('https://www.archlinux.org/feeds/news/')
