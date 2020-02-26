@@ -7,9 +7,11 @@ URL = 'https://www.archlinux.org/feeds/news/'
 ITEMS = 3
 WIDTH = 110
 
+
 class tcol:
     BLUE = '\033[36m'
     RESET = '\033[0m'
+
 
 feed = feedparser.parse(URL)
 
@@ -23,6 +25,6 @@ for item in feed['items'][:ITEMS]:
     d = item['published'][:16]
     pad = (WIDTH - (len(t) + len(d))) * ' '
 
-    print(tcol.BLUE + t + pad  + d)
+    print(tcol.BLUE + t + pad + d)
     print('-' * WIDTH)
     print(tcol.RESET + h.handle(item['summary']).strip() + '\n\n')
