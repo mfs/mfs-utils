@@ -3,6 +3,7 @@
 import feedparser
 import html2text
 
+URL = 'https://www.archlinux.org/feeds/news/'
 ITEMS = 3
 WIDTH = 110
 
@@ -10,7 +11,7 @@ class tcol:
     BLUE = '\033[36m'
     RESET = '\033[0m'
 
-feed = feedparser.parse('https://www.archlinux.org/feeds/news/')
+feed = feedparser.parse(URL)
 
 h = html2text.HTML2Text()
 h.ignore_links = True
