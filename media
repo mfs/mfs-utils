@@ -72,6 +72,11 @@ def list_media(files, allow_selection = False):
         print('No media files found in current directory.')
         return
 
+    if len(files) == 1:
+        print('Playing: %s' % os.path.basename(files[0]))
+        mplayer(files[0])
+        return
+
     for i, f in enumerate(files):
         print('[%2d] - %s' % (i, os.path.basename(f)))
 
