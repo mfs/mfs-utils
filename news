@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import click
 import feedparser
 import html2text
 
@@ -13,18 +14,30 @@ class tcol:
     RESET = '\033[0m'
 
 
-feed = feedparser.parse(URL)
+@click.command()
+@click.option('--details', default=False, is_flag=True, help='Show item details.')
+def news(details):
+    """Display latest Arch Linux news items."""
+    feed = feedparser.parse(URL)
 
-h = html2text.HTML2Text()
-h.ignore_links = True
-h.body_width = WIDTH
+    h = html2text.HTML2Text()
+    h.ignore_links = True
+    h.body_width = WIDTH
+    h.single_line_break = True
 
-for item in feed['items'][:ITEMS]:
+    for item in feed['items'][:ITEMS]:
 
-    t = item['title']
-    d = item['published'][:16]
-    pad = (WIDTH - (len(t) + len(d))) * ' '
+        t = item['title']
+        d = item['published'][:16]
+        pad = (WIDTH - (len(t) + len(d))) * ' '
 
-    print(tcol.BLUE + t + pad + d)
-    print('-' * WIDTH)
-    print(tcol.RESET + h.handle(item['summary']).strip() + '\n\n')
+        if details:
+            print(tcol.BLUE + t + pad + d)
+            print('-' * WIDTH)
+            print(tcol.RESET + h.handle(item['summary']).strip() + '\n')
+        else:
+            print(tcol.BLUE + d + tcol.RESET + ' ' + t)
+
+
+if __name__ == '__main__':
+    news()
