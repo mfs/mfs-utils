@@ -1,0 +1,39 @@
+#!/usr/bin/env python3
+
+import sys
+import os.path
+import subprocess
+from datetime import date, timedelta
+
+MONDAY = 0
+
+JOURNAL_DIR = os.path.expanduser('~/journal/')
+
+
+def file_name(offset):
+    '''file_name is prev Monday +/- offset in weeks'''
+    d = date.today()
+
+    # roll back to prev Monday if not already Mondayy
+    while d.weekday() != MONDAY:
+        d -= timedelta(days=1)
+
+    # apply offset
+    d += timedelta(days=7*offset)
+
+    return os.path.join(JOURNAL_DIR, str(d.year), f'{d}.otl')
+
+
+def main():
+    offset = 0
+    if len(sys.argv) == 2:
+        try:
+            offset = int(sys.argv[1])
+        except ValueError:
+            print(f'error: could not parse {sys.argv[1]}')
+            sys.exit(1)
+    subprocess.run(['vim', file_name(offset)])
+
+
+if __name__ == '__main__':
+    main()
