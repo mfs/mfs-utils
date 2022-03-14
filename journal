@@ -29,7 +29,7 @@ def main():
     try:
         if len(sys.argv) == 2:
             offset = int(sys.argv[1])
-            subprocess.run(['vim', file_name(offset)])
+        subprocess.run(['vim', file_name(offset)])
     except ValueError:
         print(f'error: could not parse {sys.argv[1]}')
         sys.exit(1)
