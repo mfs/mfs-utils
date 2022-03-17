@@ -14,12 +14,12 @@ def file_name(offset):
     '''file_name is prev Monday +/- offset in weeks'''
     d = date.today()
 
-    # roll back to prev Monday if not already Mondayy
+    # roll back to prev Monday if not already Monday
     while d.weekday() != MONDAY:
         d -= timedelta(days=1)
 
     # apply offset
-    d += timedelta(days=7*offset)
+    d += timedelta(days=7 * offset)
 
     return os.path.join(JOURNAL_DIR, str(d.year), f'{d}.otl')
 
@@ -35,6 +35,7 @@ def main():
         sys.exit(1)
     except FileNotFoundError as e:
         print(f'error: {e}')
+        sys.exit(1)
 
 
 if __name__ == '__main__':
